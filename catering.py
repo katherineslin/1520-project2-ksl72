@@ -38,8 +38,10 @@ def initdb_command():
     print("Initialized the database.")
 
 
-@app.route("/")
-def show_logins():
+@app.route("/", methods=["GET", "POST"])
+def main():
+    if not session.get("logged_in"):
+        return redirect(url_for("login_screen"))
     logins = list(
         db.session.execute(
             db.select(Login).order_by(Login.id.desc())
@@ -48,9 +50,13 @@ def show_logins():
     return render_template("show_logins.html", logins=logins)
 
 
-@app.route("/add", methods=["POST"])
-def add_logins():
-    new = Login(request.form["user"], request.form["password"], request.form["title"])
-    db.session.add(new)
-    db.session.commit()
-    return redirect(url_for("show_logins"))
+@app.route("/login_screen", methods=["GET", "POST"])
+def login_screen():
+    if request.method == "POST":
+        new = Login(request.form["user"], request.form["password"], request.form["title"])
+        db.session.add(new)
+        db.session.commit()
+        session["logged_in"] = True
+        return redirect(url_for("main"))
+    return render_template("login_screen.html")
+    

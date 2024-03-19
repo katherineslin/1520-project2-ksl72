@@ -1,16 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-  <form action="{{ url_for('add_logins') }}" method="post" class="add-entry">
-    <dl>
-      <dt>Username:
-      <dd><input type="text" size="30" name="user">
-      <dt>Password:
-      <dd><input type="text" size="30" name="password">
-      <dt>Title:
-      <dd><input type="text" size="30" name="title">
-      <dd><input type="submit" value="Share">
-    </dl>
-  </form>
   <ul class="entries">
   {% for users in logins %}
     <li><h2>{{ users.user }}</h2>{{ users.password }} {{users.title}}
