@@ -96,7 +96,7 @@ def create_account():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "customer")
+        new = Login(username, password, "customer", [])
         db.session.add(new)
         db.session.commit()
         return redirect(url_for("main"))
@@ -111,7 +111,7 @@ def create_staff():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "staff")
+        new = Login(username, password, "staff", [])
         db.session.add(new)
         db.session.commit()
         return redirect(url_for("owner_page"))
