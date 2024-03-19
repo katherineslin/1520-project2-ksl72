@@ -7,4 +7,9 @@
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
   </ul>
+  <form action="{{ url_for('logout') }}" method="post" class="add-entry">
+    <dl>
+      <dd><input type="submit" value="logout">
+    </dl>
+  </form>
 {% endblock %}

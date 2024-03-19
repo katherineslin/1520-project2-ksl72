@@ -11,4 +11,9 @@
       <dd><input type="submit" value="Share">
     </dl>
 </form>
+<form action="{{ url_for('logout') }}" method="post" class="add-entry">
+  <dl>
+    <dd><input type="submit" value="logout">
+  </dl>
+</form>
 {% endblock %}

@@ -53,10 +53,25 @@ def main():
 @app.route("/login_screen", methods=["GET", "POST"])
 def login_screen():
     if request.method == "POST":
-        new = Login(request.form["user"], request.form["password"], request.form["title"])
+        username = request.form["user"]
+        password = request.form["password"]
+        if username == "owner" and password == "pass":
+            return redirect(url_for("owner_page"))
+        new = Login(username, password, "customer")
         db.session.add(new)
         db.session.commit()
         session["logged_in"] = True
         return redirect(url_for("main"))
     return render_template("login_screen.html")
     
+@app.route("/owner_page", methods=["GET", "POST"])
+def owner_page():
+    if request.method == "POST":
+        return redirect(url_for("main"))
+    return render_template("owner_page.html")
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    session.pop("logged_in", None)
+    return redirect(url_for("main"))
+
