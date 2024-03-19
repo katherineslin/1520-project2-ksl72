@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+<a href="{{ url_for('staff_page') }}" class="add-entry">
+        this is staff page
+</a>
+<form action="{{ url_for('logout') }}" method="post" class="add-entry">
+    <dl>
+      <dd><input type="submit" value="logout">
+    </dl>
+  </form>
+{% endblock %}

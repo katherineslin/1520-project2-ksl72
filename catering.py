@@ -56,12 +56,20 @@ def login_screen():
         username = request.form["user"]
         password = request.form["password"]
         if username == "owner" and password == "pass":
+            session["logged_in"] = True
             return redirect(url_for("owner_page"))
-        new = Login(username, password, "customer")
-        db.session.add(new)
-        db.session.commit()
-        session["logged_in"] = True
-        return redirect(url_for("main"))
+        logins = list(
+        db.session.execute(
+            db.select(Login).order_by(Login.id.desc())
+            ).scalars()
+        )
+        for users in logins:
+            if users.user == username and users.password == password:
+                session["logged_in"] = True
+                if users.title == "staff":
+                    return redirect(url_for("staff_page"))
+                else:
+                    return redirect(url_for("main"))
     return render_template("login_screen.html")
     
 @app.route("/owner_page", methods=["GET", "POST"])
@@ -74,4 +82,25 @@ def owner_page():
 def logout():
     session.pop("logged_in", None)
     return redirect(url_for("main"))
+
+@app.route("/create_but", methods=["GET", "POST"])
+def create_but():
+    return redirect(url_for("create_account"))
+
+@app.route("/create_account", methods=["GET", "POST"])
+def create_account():
+    if request.method == "POST":
+        username = request.form["user"]
+        password = request.form["password"]
+        new = Login(username, password, "customer")
+        db.session.add(new)
+        db.session.commit()
+        return redirect(url_for("main"))
+    return render_template("create_account.html")
+
+@app.route("/staff_page", methods=["GET", "POST"])
+def staff_page():
+    if request.method == "POST":
+        return redirect(url_for("main"))
+    return render_template("staff_page.html")
 
