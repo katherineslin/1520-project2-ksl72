@@ -1,11 +1,16 @@
 {% extends "layout.html" %}
 {% block body %}
-<a href="{{ url_for('owner_page') }}" class="add-entry">
+<a action="{{ url_for('owner_page') }}" class="add-entry">
         this is owner page
 </a>
+<form action="{{ url_for('create_staff_but') }}" method="post" class="add-entry">
+  <dl>
+    <dd><input type="submit" value="create a staff account">
+  </dl>
+</form>
 <form action="{{ url_for('logout') }}" method="post" class="add-entry">
     <dl>
       <dd><input type="submit" value="logout">
     </dl>
-  </form>
+</form> 
 {% endblock %}

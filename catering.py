@@ -12,6 +12,10 @@ from flask import (
 
 from login import db, Login
 
+curr_user = " "
+curr_events_to_staff = {}
+curr_costumer_to_event = {}
+
 
 # create our little application :)
 app = Flask(__name__)
@@ -97,6 +101,21 @@ def create_account():
         db.session.commit()
         return redirect(url_for("main"))
     return render_template("create_account.html")
+
+@app.route("/create_staff_but", methods=["GET", "POST"])
+def create_staff_but():
+    return redirect(url_for("create_staff"))
+
+@app.route("/create_staff", methods=["GET", "POST"])
+def create_staff():
+    if request.method == "POST":
+        username = request.form["user"]
+        password = request.form["password"]
+        new = Login(username, password, "staff")
+        db.session.add(new)
+        db.session.commit()
+        return redirect(url_for("owner_page"))
+    return render_template("create_staff.html")
 
 @app.route("/staff_page", methods=["GET", "POST"])
 def staff_page():
