@@ -7,6 +7,24 @@
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
   </ul>
+  <form action="{{ url_for('event_add_cost') }}" method="post" class="add-entry">
+    <dl>
+      <dt> event title
+      <dd><input type="text" size="30" name="event_title">
+      <dt> event date ( eg. 01/01/01)
+      <dd><input type="text" size="30" name="event_date">
+      <dd><input type="submit" value="enter">
+    </dl>
+  </form>
+  <ul class="entries">
+    {% for e in events %}
+          {%if e.event_user == curr_user %}
+          <li><h2>{{ e.event_user }}</h2>{{ e.event_title }} {{e.event_date}}
+            {% endif %}
+    {% else %}
+      <li><em>Unbelievable.  No entries here so far</em>
+    {% endfor %}
+    </ul>
   <form action="{{ url_for('logout') }}" method="post" class="add-entry">
     <dl>
       <dd><input type="submit" value="logout">

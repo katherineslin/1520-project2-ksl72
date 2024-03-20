@@ -8,13 +8,15 @@ from flask import (
     abort,
     render_template,
     flash,
+    g,
 )
 
-from login import db, Login
+from login import db, Login, Events, Staff
 
 curr_user = " "
 curr_events_to_staff = {}
 curr_costumer_to_event = {}
+curr_event_to_date = {}
 
 
 # create our little application :)
@@ -51,8 +53,22 @@ def main():
             db.select(Login).order_by(Login.id.desc())
         ).scalars()
     )
-    return render_template("show_logins.html", logins=logins)
+    events = list(
+        db.session.execute(
+            db.select(Events).order_by(Events.id.desc())
+        ).scalars()
+    )
+    return render_template("show_logins.html", logins=logins, events=events, curr_user = session["curr_user"])
 
+@app.route("/event_add_cost", methods=["GET", "POST"])
+def event_add_cost():
+    if request.method == "POST":
+        event_title = request.form["event_title"]
+        event_date = request.form["event_date"]
+        new = Events(session["curr_user"], event_title, event_date)
+        db.session.add(new)
+        db.session.commit()
+        return redirect(url_for("main"))
 
 @app.route("/login_screen", methods=["GET", "POST"])
 def login_screen():
@@ -61,6 +77,7 @@ def login_screen():
         password = request.form["password"]
         if username == "owner" and password == "pass":
             session["logged_in"] = True
+            session["curr_user"] = "owner"
             return redirect(url_for("owner_page"))
         logins = list(
         db.session.execute(
@@ -70,6 +87,7 @@ def login_screen():
         for users in logins:
             if users.user == username and users.password == password:
                 session["logged_in"] = True
+                session["curr_user"] = username
                 if users.title == "staff":
                     return redirect(url_for("staff_page"))
                 else:
@@ -85,6 +103,7 @@ def owner_page():
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.pop("logged_in", None)
+    session.pop("curr_user", None)
     return redirect(url_for("main"))
 
 @app.route("/create_but", methods=["GET", "POST"])
@@ -96,7 +115,7 @@ def create_account():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "customer", [])
+        new = Login(username, password, "customer", {})
         db.session.add(new)
         db.session.commit()
         return redirect(url_for("main"))
@@ -111,7 +130,7 @@ def create_staff():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "staff", [])
+        new = Login(username, password, "staff", {})
         db.session.add(new)
         db.session.commit()
         return redirect(url_for("owner_page"))
