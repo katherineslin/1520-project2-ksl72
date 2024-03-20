@@ -48,7 +48,7 @@ def initdb_command():
 def main():
     if not session.get("logged_in"):
         return redirect(url_for("login_screen"))
-    if session["curr_user"] == "onwner":
+    if session["curr_user"] == "owner":
         return redirect(url_for("owner_page"))
     if session["title"] == "staff":
         return redirect(url_for("staff_page"))
@@ -105,6 +105,7 @@ def login_screen():
         password = request.form["password"]
         if username == "owner" and password == "pass":
             session["logged_in"] = True
+            session["title"] = "owner"
             session["curr_user"] = "owner"
             return redirect(url_for("owner_page"))
         logins = list(
@@ -127,7 +128,21 @@ def login_screen():
     
 @app.route("/owner_page", methods=["GET", "POST"])
 def owner_page():
-    return render_template("owner_page.html")
+    events = list(
+        db.session.execute(
+            db.select(Events).order_by(Events.id.desc())
+        ).scalars()
+    )
+    curr_staff = list(
+        db.session.execute(
+            db.select(Staff).order_by(Staff.id.desc())
+        ).scalars()
+    )
+    for e in events:
+        if e.event_staff_count == 0:
+            flash("one or more events have no staff")
+
+    return render_template("owner_page.html", events = events, staff = curr_staff)
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():

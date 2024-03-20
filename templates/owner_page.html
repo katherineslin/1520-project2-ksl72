@@ -1,7 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
-<a action="{{ url_for('owner_page') }}" class="add-entry">
-        this is owner page
+<a action="{{ url_for('owner_page') }}">
+  <ul class="entries">
+    {% for e in events %}
+        <li><h2>{{ e.event_title }}</h2>{{ e.event_date }}
+          current staff:
+          {% for s in staff%}
+            {% if s.event_date == e.event_date %}
+            <p>{{s.event_staff}}</p>
+            {% endif %}
+          {% endfor %}
+    {% else %}
+      <li><em>Unbelievable.  No entries here so far</em>
+    {% endfor %}
 </a>
 <form action="{{ url_for('create_staff_but') }}" method="post" class="add-entry">
   <dl>
