@@ -20,6 +20,12 @@
     {% for e in events %}
           {%if e.event_user == curr_user %}
           <li><h2>{{ e.event_user }}</h2>{{ e.event_title }} {{e.event_date}}
+            <form action="{{ url_for('event_delete') }}" method="post">
+              <dl>
+                <dd><input type="hidden" name="event_date" value={{e.event_date}} />
+                <dd><input type="submit" value="cancel event">
+              </dl>
+            </form>
             {% endif %}
     {% else %}
       <li><em>Unbelievable.  No entries here so far</em>

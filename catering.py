@@ -65,8 +65,28 @@ def event_add_cost():
     if request.method == "POST":
         event_title = request.form["event_title"]
         event_date = request.form["event_date"]
-        new = Events(session["curr_user"], event_title, event_date)
-        db.session.add(new)
+        events = list(
+            db.session.execute(
+                db.select(Events).order_by(Events.id.desc())
+            ).scalars()
+        )
+        date_overlap = False
+        for e in events:
+            if e.event_date == event_date:
+                date_overlap = True
+                flash("this date has an event already, select again")
+        if not date_overlap:
+            new = Events(session["curr_user"], event_title, event_date)
+            db.session.add(new)
+            db.session.commit()
+        return redirect(url_for("main"))
+
+@app.route("/event_delete", methods=["GET", "POST"])
+def event_delete():
+    if request.method == "POST":
+        event_date = request.form["event_date"]
+        d = db.session.execute(db.select(Events).where(Events.event_date == event_date)).scalar()
+        db.session.delete(d)
         db.session.commit()
         return redirect(url_for("main"))
 
@@ -92,6 +112,7 @@ def login_screen():
                     return redirect(url_for("staff_page"))
                 else:
                     return redirect(url_for("main"))
+        flash("invalid user or password")
     return render_template("login_screen.html")
     
 @app.route("/owner_page", methods=["GET", "POST"])
@@ -115,10 +136,13 @@ def create_account():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "customer", {})
-        db.session.add(new)
-        db.session.commit()
-        return redirect(url_for("main"))
+        if username.strip() =="" or password.strip()  =="":
+            flash("invalid user or password")
+        else:
+            new = Login(username, password, "customer", {})
+            db.session.add(new)
+            db.session.commit()
+            return redirect(url_for("main"))
     return render_template("create_account.html")
 
 @app.route("/create_staff_but", methods=["GET", "POST"])
