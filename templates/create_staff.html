@@ -2,11 +2,21 @@
 {% block body %}
 <form action="{{ url_for('create_staff') }}" method="post" class="add-entry">
     <dl>
-      <dt>Username:
+      <dt>username:
       <dd><input type="text" size="30" name="user">
-      <dt>Password:
+      <dt>password:
       <dd><input type="text" size="30" name="password">
       <dd><input type="submit" value="create staff">
     </dl>
+</form>
+<form action="{{ url_for('logout') }}" method="post" class="add-entry">
+  <dl>
+    <dd><input type="submit" value="logout">
+  </dl>
+</form>
+<form action="{{ url_for('back_owner') }}" method="post" class="add-entry">
+  <dl>
+    <dd><input type="submit" value="back to main page">
+  </dl>
 </form>
 {% endblock %}

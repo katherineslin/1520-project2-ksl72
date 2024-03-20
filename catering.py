@@ -69,6 +69,9 @@ def event_add_cost():
     if request.method == "POST":
         event_title = request.form["event_title"]
         event_date = request.form["event_date"]
+        if event_title.strip() =="" or event_date.strip()  =="":
+            flash("invalid title or date")
+            return redirect(url_for("main"))
         events = list(
             db.session.execute(
                 db.select(Events).order_by(Events.id.desc())
@@ -158,10 +161,17 @@ def create_but():
 @app.route("/create_account", methods=["GET", "POST"])
 def create_account():
     if request.method == "POST":
+        logins = list(
+            db.session.execute(
+                db.select(Login).order_by(Login.id.desc())
+                ).scalars()
+            )
         username = request.form["user"]
         password = request.form["password"]
         if username.strip() =="" or password.strip()  =="":
             flash("invalid user or password")
+        elif db.session.execute(db.select(Login).where(Login.user == username)).scalar() in logins:
+            flash("username already exists, select again")
         else:
             new = Login(username, password, "customer")
             db.session.add(new)
@@ -176,12 +186,22 @@ def create_staff_but():
 @app.route("/create_staff", methods=["GET", "POST"])
 def create_staff():
     if request.method == "POST":
+        logins = list(
+            db.session.execute(
+                db.select(Login).order_by(Login.id.desc())
+                ).scalars()
+            )
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "staff")
-        db.session.add(new)
-        db.session.commit()
-        return redirect(url_for("owner_page"))
+        if username.strip() =="" or password.strip()  =="":
+            flash("invalid user or password")
+        elif db.session.execute(db.select(Login).where(Login.user == username)).scalar() in logins:
+            flash("username already exists, select again")
+        else:
+            new = Login(username, password, "staff")
+            db.session.add(new)
+            db.session.commit()
+            return redirect(url_for("owner_page"))
     return render_template("create_staff.html")
 
 @app.route("/staff_page", methods=["GET", "POST"])
@@ -196,7 +216,11 @@ def staff_page():
             db.select(Staff).order_by(Staff.id.desc())
         ).scalars()
     )
-    return render_template("staff_page.html", events=events, staff=curr_staff)
+    atl = False
+    for e in events:
+        if e.event_staff_count < 3:
+            atl = True
+    return render_template("staff_page.html", events=events, staff=curr_staff, atl = atl)
 
 @app.route("/sign_up", methods=["GET", "POST"])
 def sign_up():
@@ -221,3 +245,11 @@ def sign_up():
                 db.session.add(new)
                 db.session.commit()
         return redirect(url_for("staff_page"))
+
+@app.route("/back_login", methods=["GET", "POST"])
+def back_login():
+    return redirect(url_for("main"))
+
+@app.route("/back_owner", methods=["GET", "POST"])
+def back_owner():
+    return redirect(url_for("owner_page"))

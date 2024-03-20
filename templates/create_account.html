@@ -1,13 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
+<h2>create an account </h2>
 <form action="{{ url_for('create_account') }}" method="post" class="add-entry">
     <dl>
       <p>must be valid user and password, no empty strings</p>
-      <dt>Username:
+      <dt>username:
       <dd><input type="text" size="30" name="user">
-      <dt>Password:
+      <dt>password:
       <dd><input type="text" size="30" name="password">
       <dd><input type="submit" value="create">
     </dl>
+</form>
+<form action="{{ url_for('back_login') }}" method="post" class="add-entry">
+  <dl>
+    <dd><input type="submit" value="back to login">
+  </dl>
 </form>
 {% endblock %}

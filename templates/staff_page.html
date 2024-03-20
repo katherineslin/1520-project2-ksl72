@@ -4,7 +4,8 @@
   <ul class="entries">
     {% for e in events %}
       {% if e.event_staff_count < 3 %}
-        <li><h2>{{ e.event_title }}</h2>{{ e.event_date }}
+        <li><h3>{{ e.event_title }} commissioned by {{ e.event_user}}</h3>
+          <p>date: {{ e.event_date }}</p>
           current staff:
           {% for s in staff%}
             {% if s.event_date == e.event_date %}
@@ -18,9 +19,10 @@
             </dl>
           </form>
       {% endif %}
-    {% else %}
-      <li><em>Unbelievable.  No entries here so far</em>
     {% endfor %}
+    {% if not atl %}
+      <li><em> there are no current events </em>
+    {% endif %}
     </ul>
 </a>
 <form action="{{ url_for('logout') }}" method="post" class="add-entry">
