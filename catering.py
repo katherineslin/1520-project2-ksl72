@@ -48,6 +48,10 @@ def initdb_command():
 def main():
     if not session.get("logged_in"):
         return redirect(url_for("login_screen"))
+    if session["curr_user"] == "onwner":
+        return redirect(url_for("owner_page"))
+    if session["title"] == "staff":
+        return redirect(url_for("staff_page"))
     logins = list(
         db.session.execute(
             db.select(Login).order_by(Login.id.desc())
@@ -76,7 +80,7 @@ def event_add_cost():
                 date_overlap = True
                 flash("this date has an event already, select again")
         if not date_overlap:
-            new = Events(session["curr_user"], event_title, event_date)
+            new = Events(session["curr_user"], event_title, event_date, 0)
             db.session.add(new)
             db.session.commit()
         return redirect(url_for("main"))
@@ -86,6 +90,10 @@ def event_delete():
     if request.method == "POST":
         event_date = request.form["event_date"]
         d = db.session.execute(db.select(Events).where(Events.event_date == event_date)).scalar()
+        for x in range(d.event_staff_count):
+            b = db.session.execute(db.select(Staff).where(Staff.event_date == event_date)).scalar()
+            db.session.delete(b)
+            db.session.commit()
         db.session.delete(d)
         db.session.commit()
         return redirect(url_for("main"))
@@ -109,22 +117,23 @@ def login_screen():
                 session["logged_in"] = True
                 session["curr_user"] = username
                 if users.title == "staff":
+                    session["title"] = users.title
                     return redirect(url_for("staff_page"))
                 else:
+                    session["title"] = users.title
                     return redirect(url_for("main"))
         flash("invalid user or password")
     return render_template("login_screen.html")
     
 @app.route("/owner_page", methods=["GET", "POST"])
 def owner_page():
-    if request.method == "POST":
-        return redirect(url_for("main"))
     return render_template("owner_page.html")
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.pop("logged_in", None)
     session.pop("curr_user", None)
+    session.pop("title", None)
     return redirect(url_for("main"))
 
 @app.route("/create_but", methods=["GET", "POST"])
@@ -139,7 +148,7 @@ def create_account():
         if username.strip() =="" or password.strip()  =="":
             flash("invalid user or password")
         else:
-            new = Login(username, password, "customer", {})
+            new = Login(username, password, "customer")
             db.session.add(new)
             db.session.commit()
             return redirect(url_for("main"))
@@ -154,7 +163,7 @@ def create_staff():
     if request.method == "POST":
         username = request.form["user"]
         password = request.form["password"]
-        new = Login(username, password, "staff", {})
+        new = Login(username, password, "staff")
         db.session.add(new)
         db.session.commit()
         return redirect(url_for("owner_page"))
@@ -162,7 +171,38 @@ def create_staff():
 
 @app.route("/staff_page", methods=["GET", "POST"])
 def staff_page():
-    if request.method == "POST":
-        return redirect(url_for("main"))
-    return render_template("staff_page.html")
+    events = list(
+        db.session.execute(
+            db.select(Events).order_by(Events.id.desc())
+        ).scalars()
+    )
+    curr_staff = list(
+        db.session.execute(
+            db.select(Staff).order_by(Staff.id.desc())
+        ).scalars()
+    )
+    return render_template("staff_page.html", events=events, staff=curr_staff)
 
+@app.route("/sign_up", methods=["GET", "POST"])
+def sign_up():
+    if request.method == "POST":
+        event_date = request.form["event_date"]
+        curr_staff = list(
+            db.session.execute(
+                db.select(Staff).order_by(Staff.id.desc())
+                ).scalars()
+         )
+        signedup = False
+        for c in curr_staff:
+            if c.event_date == event_date:
+                if c.event_staff == session["curr_user"]:
+                    flash("already signed up for this, select again")
+                    signedup = True
+        d = db.session.execute(db.select(Events).where(Events.event_date == event_date)).scalar()
+        if not signedup:
+            if d.event_staff_count < 3:
+                d.event_staff_count = d.event_staff_count + 1
+                new = Staff(event_date, session["curr_user"])
+                db.session.add(new)
+                db.session.commit()
+        return redirect(url_for("staff_page"))

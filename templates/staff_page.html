@@ -1,7 +1,27 @@
 {% extends "layout.html" %}
 {% block body %}
 <a action="{{ url_for('staff_page') }}" class="add-entry">
-        this is staff page
+  <ul class="entries">
+    {% for e in events %}
+      {% if e.event_staff_count < 3 %}
+        <li><h2>{{ e.event_title }}</h2>{{ e.event_date }}
+          current staff:
+          {% for s in staff%}
+            {% if s.event_date == e.event_date %}
+            <p>{{s.event_staff}}</p>
+            {% endif %}
+          {% endfor %}
+          <form action="{{ url_for('sign_up') }}" method="post">
+            <dl>
+              <dd><input type="hidden" name="event_date" value={{e.event_date}} />
+              <dd><input type="submit" value="sign up">
+            </dl>
+          </form>
+      {% endif %}
+    {% else %}
+      <li><em>Unbelievable.  No entries here so far</em>
+    {% endfor %}
+    </ul>
 </a>
 <form action="{{ url_for('logout') }}" method="post" class="add-entry">
     <dl>
